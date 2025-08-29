@@ -4,89 +4,397 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vehicle Inspection Checklist</title>
+
+<!-- Fonte opcional -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{--fg:#111827;--muted:#6B7280;--muted2:#9CA3AF;--border:#E5E7EB;--ok:#111827}
+  :root{
+    --bg:#F3F4F6; --card:#fff; --fg:#1F2937; --muted:#6B7280; --muted2:#9CA3AF;
+    --border:#E5E7EB; --blue:#2563EB; --blue-600:#2563EB; --blue-700:#1D4ED8;
+    --red:#EF4444; --red-600:#DC2626; --white:#fff;
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif;color:var(--fg);background:#fff}
-  .container{max-width:880px;margin:0 auto;padding:16px}
-  h1{font-size:26px;margin:0 0 8px}
-  h2{font-size:18px;margin:0 0 6px}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:'Inter',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",sans-serif}
+  .container{max-width:768px;margin:0 auto;padding:16px}
+  .center{text-align:center}
+  h1{font-size:28px;margin:0 0 8px}
+  h2{font-size:20px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
   .muted{color:var(--muted)}
-  .small{font-size:12px}
-  .card{border:1px solid var(--border);border-radius:14px;padding:14px;margin:12px 0}
-  .item{display:flex;gap:10px;align-items:flex-start;margin-top:8px}
-  .item input{position:absolute;opacity:0}
-  .box{width:22px;height:22px;border:2px solid #D1D5DB;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none}
-  .box svg{width:16px;height:16px;display:none}
-  .label{display:block;cursor:pointer;line-height:1.25}
-  .main{font-weight:600}
-  .sub{display:block;font-size:12px;color:var(--muted)}
-  .item input:checked + label .box{background:var(--ok);border-color:var(--ok)}
-  .item input:checked + label .box svg{display:block;stroke:#fff}
-  .item input:checked + label .main{color:var(--muted);text-decoration:line-through}
-  .item input:checked + label .sub{color:var(--muted2);text-decoration:line-through}
+  .muted2{color:var(--muted2)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .stack{display:flex;flex-direction:column;gap:24px}
+  .section-list{display:flex;flex-direction:column;gap:12px}
+
+  /* Barra de progresso */
+  .progress-wrap{margin-bottom:24px}
+  .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .progress-bar{width:100%;height:10px;background:#E5E7EB;border-radius:999px;overflow:hidden}
+  .progress-inner{height:100%;width:0%;background:var(--blue);border-radius:999px;transition:width .2s ease}
+
+  /* Checklist */
+  .checklist-item input[type="checkbox"]{position:absolute;opacity:0;pointer-events:none}
+  .label{display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+  .custom-checkbox{
+    width:22px;height:22px;border:2px solid #D1D5DB;border-radius:6px;
+    display:inline-flex;align-items:center;justify-content:center;flex:none;margin-top:2px
+  }
+  .custom-checkbox svg{width:16px;height:16px;display:none}
+  .main-text{font-weight:600}
+  .sub-text{display:block;font-size:12px;color:var(--muted)}
+  .checklist-item input:checked + label .main-text{color:var(--muted);text-decoration:line-through}
+  .checklist-item input:checked + label .sub-text{color:var(--muted2);text-decoration:line-through}
+  .checklist-item input:checked + label .custom-checkbox{background:var(--blue);border-color:var(--blue)}
+  .checklist-item input:checked + label .custom-checkbox svg{display:block;stroke:#fff}
+
+  /* Botão reset */
+  .actions{margin:32px 0;text-align:center}
+  .btn{
+    background:var(--red);color:var(--white);font-weight:700;border:0;border-radius:10px;
+    padding:10px 20px;cursor:pointer;transition:background .15s ease
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn:hover{background:var(--red-600)}
+  @media (min-width:640px){ .container{padding:24px} }
 </style>
 </head>
 <body>
-<main class="container" id="app">
-  <h1>Vehicle Inspection Checklist</h1>
-  <p>Inspection guide for your i30<br><span class="muted">Guia para inspeção do seu i30</span></p>
-  <p><strong>Progresso 0%</strong></p>
-</main>
+
+<div class="container">
+  <!-- Header -->
+  <header class="center" style="margin-bottom:16px">
+    <h1>Vehicle Inspection Checklist</h1>
+    <p>
+      <span class="main-text">Inspection guide for your i30</span><br>
+      <small class="sub-text muted">Guia para inspeção do seu i30</small>
+    </p>
+  </header>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-head">
+      <span class="muted">
+        <span class="main-text">Progress</span><br>
+        <small class="sub-text muted">Progresso</small>
+      </span>
+      <span id="progress-text" style="font-weight:700;color:var(--blue)">0%</span>
+    </div>
+    <div class="progress-bar"><div id="progress-bar" class="progress-inner"></div></div>
+  </div>
+
+  <!-- Sections -->
+  <div class="stack">
+
+    <!-- Maintenance History -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Maintenance History</span><br>
+        <small class="sub-text muted" style="font-weight:500">Histórico de Manutenção</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item1">
+          <label class="label" for="item1">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check if the timing belt was replaced at 90,000 km.</span>
+              <small class="sub-text">Checar se a correia foi substituída aos 90.000 km.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item2">
+          <label class="label" for="item2">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check records for services, fluid changes, etc.</span>
+              <small class="sub-text">Verificar registros de revisões, trocas de fluídos, etc.</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Electrical and Finishing -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Electrical and Finishing</span><br>
+        <small class="sub-text muted" style="font-weight:500">Parte Elétrica e Acabamentos</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item3">
+          <label class="label" for="item3">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Test the electric handbrake.</span>
+              <small class="sub-text">Testar freio de mão elétrico.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item4">
+          <label class="label" for="item4">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Test steering wheel adjustments.</span>
+              <small class="sub-text">Testar ajustes do volante.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item5">
+          <label class="label" for="item5">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Test sunroof (if any) and listen for noises.</span>
+              <small class="sub-text">Testar teto solar (se houver) e ouvir ruídos.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item6">
+          <label class="label" for="item6">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check for oil leaks on the throttle body.</span>
+              <small class="sub-text">Observar vazamentos de óleo no corpo de borboleta.</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Engine and Transmission -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Engine and Transmission</span><br>
+        <small class="sub-text muted" style="font-weight:500">Motor e Transmissão</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item7">
+          <label class="label" for="item7">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Start the engine cold and check for difficulty or unusual noises.</span>
+              <small class="sub-text">Ligar a frio e observar dificuldade ou ruídos.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item8">
+          <label class="label" for="item8">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check automatic transmission (for jerks/slowness).</span>
+              <small class="sub-text">Verificar câmbio automático (sem trancos/lentidão).</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cooling, Brakes, and Suspension -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Cooling, Brakes, and Suspension</span><br>
+        <small class="sub-text muted" style="font-weight:500">Arrefecimento, Freios e Suspensão</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item9">
+          <label class="label" for="item9">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check for leaks in the cooling system and fan operation.</span>
+              <small class="sub-text">Checar vazamentos no sistema de arrefecimento e ventoinha.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item10">
+          <label class="label" for="item10">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check brake pads, discs, and for any noises.</span>
+              <small class="sub-text">Verificar pastilhas, discos e ruídos nos freios.</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tires, Fluids, and Exhaust -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Tires, Fluids, and Exhaust</span><br>
+        <small class="sub-text muted" style="font-weight:500">Pneus, Fluídos e Escapamento</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item16">
+          <label class="label" for="item16">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check tire tread and for uneven wear.</span>
+              <small class="sub-text">Passe a mão sobre os pneus; desgaste irregular pode indicar problemas de alinhamento.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item17">
+          <label class="label" for="item17">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check engine oil level and color.</span>
+              <small class="sub-text">Puxe a vareta com o motor frio. O óleo deve estar cor de mel, não preto ou leitoso.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item18">
+          <label class="label" for="item18">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Look for rust or holes in the exhaust system.</span>
+              <small class="sub-text">Com o motor ligado, ouça ruídos de vazamento e olhe por baixo do carro por furos/ferrugem.</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interior and Structure -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Interior and Structure</span><br>
+        <small class="sub-text muted" style="font-weight:500">Interior e Estrutura</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item11">
+          <label class="label" for="item11">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Test all lights, windows, locks, and sensors.</span>
+              <small class="sub-text">Testar todas as luzes, vidros, travas e sensores.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item12">
+          <label class="label" for="item12">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Inspect for damage, corrosion, or signs of previous accidents.</span>
+              <small class="sub-text">Inspecionar por danos, corrosão ou sinais de batidas.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item19">
+          <label class="label" for="item19">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Verify the vehicle's documentation (VIN match).</span>
+              <small class="sub-text">Confira se o número do chassi no documento é o mesmo gravado no carro (para-brisa/porta).</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Test Drive -->
+    <section class="card">
+      <h2>
+        <span class="main-text">Test Drive</span><br>
+        <small class="sub-text muted" style="font-weight:500">Teste de Condução</small>
+      </h2>
+      <div class="section-list">
+        <div class="checklist-item">
+          <input type="checkbox" id="item13">
+          <label class="label" for="item13">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Start with a cold engine, check for smells and noises.</span>
+              <small class="sub-text">Começar com motor frio, checar odores e ruídos.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item14">
+          <label class="label" for="item14">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Check steering alignment.</span>
+              <small class="sub-text">Verificar alinhamento da direção.</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="checklist-item">
+          <input type="checkbox" id="item15">
+          <label class="label" for="item15">
+            <span class="custom-checkbox"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>
+            <span>
+              <span class="main-text">Test air conditioning.</span>
+              <small class="sub-text">Testar ar condicionado.</small>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Reset -->
+  <div class="actions">
+    <button id="reset-button" class="btn">
+      <span class="main-text">Reset Checklist</span><br>
+      <small class="sub-text" style="color:#FECACA">Resetar Checklist</small>
+    </button>
+  </div>
+</div>
 
 <script>
-/* ====== Conteúdo da checklist ====== */
-const SECTIONS = [
-  {
-    title: "Maintenance History",
-    subtitle: "Histórico de Manutenção",
-    items: [
-      {main:"Verificar histórico de revisões", sub:"Concessionária, notas e serviços executados"},
-      {main:"Correia dentada trocada aos 90.000 km", sub:"Checar notas e data da substituição"},
-      {main:"Troca de óleo e filtros", sub:"Óleo, ar, cabine e combustível"}
-    ]
-  },
-  {
-    title: "Motor e Fluídos",
-    subtitle: "Checagens básicas",
-    items: [
-      {main:"Nível do óleo", sub:"Verificar vazamentos e coloração"},
-      {main:"Líquido de arrefecimento", sub:"Reservatório e mangueiras"},
-      {main:"Fluido de freio", sub:"DOT correto e nível adequado"}
-    ]
-  }
-];
-/* ====== Fim do conteúdo ====== */
+document.addEventListener('DOMContentLoaded', () => {
+  const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+  const resetButton = document.getElementById('reset-button');
+  const totalItems = checkboxes.length;
 
-const app = document.getElementById('app');
-SECTIONS.forEach((sec, si) => {
-  const card = document.createElement('section');
-  card.className='card';
-  card.innerHTML = `
-    <h2>${sec.title}</h2>
-    <p class="muted">${sec.subtitle||''}</p>
-    <div class="list"></div>
-  `;
-  const list = card.querySelector('.list');
-  sec.items.forEach((it, ii) => {
-    const id = `s${si}i${ii}`;
-    const wrap = document.createElement('div'); wrap.className='item';
-    wrap.innerHTML = `
-      <input id="${id}" type="checkbox">
-      <label class="label" for="${id}">
-        <span class="box" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="3">
-            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span class="main">${it.main}</span>
-        ${it.sub ? `<span class="sub">${it.sub}</span>` : ``}
-      </label>
-    `;
-    list.appendChild(wrap);
+  function updateProgress() {
+    const checked = document.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
+    const pct = totalItems ? Math.round((checked/totalItems)*100) : 0;
+    progressBar.style.width = pct + '%';
+    progressText.textContent = pct + '%';
+  }
+
+  checkboxes.forEach(cb => cb.addEventListener('change', updateProgress));
+
+  resetButton.addEventListener('click', () => {
+    checkboxes.forEach(cb => cb.checked = false);
+    updateProgress();
   });
-  app.appendChild(card);
+
+  updateProgress();
 });
 </script>
+
 </body>
 </html>
